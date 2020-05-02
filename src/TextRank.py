@@ -96,7 +96,7 @@ def generate_summary(sentences: list, ranked_sentences: list):
     print('Generating summary')
 
     # Get top 1/3 th ranked sentences
-    top_ranked_sentences = ranked_sentences[:int(len(sentences) / 3)]
+    top_ranked_sentences = ranked_sentences[:int(len(sentences) / 3)] if len(sentences) >= 3 else ranked_sentences
 
     sentence_count = 0
     summary = ''
