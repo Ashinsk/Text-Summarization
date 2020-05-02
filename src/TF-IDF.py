@@ -182,8 +182,6 @@ def main():
     print('\nOriginal document\n',text,end='\n'*2)
     print('Summary\n',summary)
 
-    return summary
-
 
 if __name__ == '__main__':
     main()
