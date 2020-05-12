@@ -7,7 +7,7 @@ from nltk.stem import PorterStemmer
 ps = PorterStemmer()
 
 
-def text_preprocessing(sentences):
+def text_preprocessing(sentences: list) -> list:
     """
     Pre processing text to remove unnecessary words.
     """
@@ -15,15 +15,22 @@ def text_preprocessing(sentences):
 
     stop_words = set(stopwords.words('english'))
 
-    clean_words = None
+    clean_words = []
     for sent in sentences:
-        words = word_tokenize(sent)
-        words = [ps.stem(word.lower()) for word in words if word.isalnum()]
-        clean_words = [word for word in words if word not in stop_words]
+        # Tokenizing words.
+        words = word_tokenize(sent.lower())
+        # Removing non alphabetic and numeric words.
+        words = [ps.stem(word) for word in words if word.isalnum()]
+        # Removing stopwords
+        clean_words += [word for word in words if word not in stop_words]
 
     return clean_words
 
+
 def create_word_frequency_table(words: list) -> dict:
+    """
+    Creating word frequency table which contains frequency of each word used in the text.
+    """
     print('Creating word frequency table')
 
     freq_table = dict()
@@ -40,6 +47,7 @@ def create_word_frequency_table(words: list) -> dict:
 def create_sentence_score_table(sentences: list, freq_table: dict) -> dict:
     """
     Creating a dictionary to keep the score of each sentence.
+    Sore is the sum of frequency of words used in the sentence.
     """
     print('Creating sentence score table')
 
@@ -58,6 +66,7 @@ def create_sentence_score_table(sentences: list, freq_table: dict) -> dict:
 def find_average_score(sent_value: dict) -> int:
     """
     Calculate average value of a sentence form the original text.
+    Average value is the sum value divided by the number of sentences in the text.
     """
     print('Finding average score')
 
@@ -72,17 +81,14 @@ def find_average_score(sent_value: dict) -> int:
 
 def generate_summary(sentences: list, sent_value: dict, avg: int) -> str:
     """
-    Generate a sentence for sentence score greater than average.
+    To generate the summary, extracting the sentences having sentence score greater than or equal to average.
     """
     print('Generating summary')
 
-    sentence_count = 0
     summary = ''
-
     for sent in sentences:
         if sent[:15] in sent_value and sent_value[sent[:15]] >= avg:
             summary += sent + " "
-            sentence_count += 1
 
     return summary
 
@@ -90,11 +96,17 @@ def generate_summary(sentences: list, sent_value: dict, avg: int) -> str:
 def main():
     text = "Your text goes here."
 
+    text = ""
+
+    with open('../File_1_en.txt', "r+") as f:
+        for line in f:
+            text += line
+
     sentences = sent_tokenize(text.strip())
-    print('Sentences',sentences)
+    print('Sentences',len(sentences),sentences)
     
     clean_words = text_preprocessing(sentences)
-    print('Clean Words',clean_words)
+    print('Clean Words',len(clean_words),clean_words)
 
     freq_table = create_word_frequency_table(clean_words)
     print('Frequency Table',freq_table)
