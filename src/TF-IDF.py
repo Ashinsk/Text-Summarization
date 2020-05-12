@@ -119,7 +119,7 @@ def create_sentence_score_table(tf_idf_matrix) -> dict:
         for word, score in f_table.items():
             total_score_per_sentence += score
 
-            sentence_value[sent] = total_score_per_sentence / count_words_in_sentence
+        sentence_value[sent] = total_score_per_sentence / count_words_in_sentence
 
     return sentence_value
 
