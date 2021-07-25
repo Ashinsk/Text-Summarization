@@ -6,11 +6,19 @@ import math
 ps = PorterStemmer()
 
 
-def text_preprocessing(sentences):
+def sent_preprocessing(sentences: list) -> list:
+    cleaned_sentencs = [sent for sent in sentences if sent]
+    for sent in sentences:
+        if sent == '' or sent == ' ':
+            print(1)
+    return cleaned_sentencs
+
+
+def text_preprocessing(sentences: list):
     """
     Pre processing text to remove unnecessary words.
     """
-    print('Preprocessing text')
+    # print('Preprocessing text')
 
     stop_words = set(stopwords.words('english'))
 
@@ -28,22 +36,22 @@ def create_tf_matrix(sentences: list) -> dict:
     Here document refers to a sentence.
     TF(t) = (Number of times the term t appears in a document) / (Total number of terms in the document)
     """
-    print('Creating tf matrix.')
+    # print('Creating tf matrix.')
 
     tf_matrix = {}
 
     for sentence in sentences:
         tf_table = {}
 
-        words_count = len(sentence)
         clean_words = text_preprocessing([sentence])
+        words_count = len(word_tokenize(sentence))
 
         # Determining frequency of words in the sentence
         word_freq = {}
         for word in clean_words:
             word_freq[word] = (word_freq[word] + 1) if word in word_freq else 1
 
-        # Calculating tf of the words in the sentence
+        # Calculating relative tf of the words in the sentence
         for word, count in word_freq.items():
             tf_table[word] = count / words_count
 
@@ -54,12 +62,12 @@ def create_tf_matrix(sentences: list) -> dict:
 
 def create_idf_matrix(sentences: list) -> dict:
     """
+    Inverse Document Frequency.
     IDF(t) = log_e(Total number of documents / Number of documents with term t in it)
     """
-    print('Creating idf matrix.')
+    # print('Creating idf matrix.')
 
     idf_matrix = {}
-
     documents_count = len(sentences)
     sentence_word_table = {}
 
@@ -89,7 +97,7 @@ def create_tf_idf_matrix(tf_matrix, idf_matrix) -> dict:
     """
     Create a tf-idf matrix which is multiplication of tf * idf individual words
     """
-    print('Calculating tf-idf of sentences.')
+    # print('Calculating tf-idf of sentences.')
 
     tf_idf_matrix = {}
 
@@ -108,18 +116,18 @@ def create_sentence_score_table(tf_idf_matrix) -> dict:
     """
     Determining average score of words of the sentence with its words tf-idf value.
     """
-    print('Creating sentence score table.')
+    # print('Creating sentence score table.')
 
     sentence_value = {}
 
     for sent, f_table in tf_idf_matrix.items():
         total_score_per_sentence = 0
-
         count_words_in_sentence = len(f_table)
         for word, score in f_table.items():
             total_score_per_sentence += score
 
-        sentence_value[sent] = total_score_per_sentence / count_words_in_sentence
+        smoothing = 1
+        sentence_value[sent] = (total_score_per_sentence + smoothing) / (count_words_in_sentence + smoothing)
 
     return sentence_value
 
@@ -128,7 +136,7 @@ def find_average_score(sentence_value):
     """
     Calculate average value of a sentence form the sentence score table.
     """
-    print('Finding average score')
+    # print('Finding average score')
 
     sum = 0
     for val in sentence_value:
@@ -143,7 +151,7 @@ def generate_summary(sentences, sentence_value, threshold):
     """
     Generate a sentence for sentence score greater than average.
     """
-    print('Generating summary')
+    # print('Generating summary')
 
     sentence_count = 0
     summary = ''
@@ -157,30 +165,39 @@ def generate_summary(sentences, sentence_value, threshold):
 
 
 def main():
-    text = "If you have not achieved the success you deserve and are considering giving up, will you regret it in a few years or decades from now? Only you can answer that, but you should carve out time to discover your motivation for pursuing your goals. It’s a fact, if you don’t know what you want you’ll get what life hands you and it may not be in your best interest, affirms author Larry Weidel: “Winners know that if you don’t figure out what you want, you’ll get whatever life hands you.” The key is to develop a powerful vision of what you want and hold that image in your mind. Nurture it daily and give it life by taking purposeful action towards it."
+    text = ""
+    with open('src/File_1_en', "r+") as f:
+        for line in f:
+            text += line
 
     sentences = sent_tokenize(text)
-    print('Sentences', sentences)
+    # print('Sentences', sentences)
+
+    # sentences = sent_preprocessing(sentences)
 
     tf_matrix = create_tf_matrix(sentences)
-    print('TF matrix', tf_matrix)
+    # print('TF matrix', tf_matrix)
 
     idf_matrix = create_idf_matrix(sentences)
-    print('IDF matrix',idf_matrix)
+    # print('IDF matrix',idf_matrix)
 
     tf_idf_matrix = create_tf_idf_matrix(tf_matrix, idf_matrix)
-    print('TF-IDF matrix', tf_idf_matrix)
+    # print('TF-IDF matrix', tf_idf_matrix)
+    # print('First document tfidf',tf_idf_matrix[list(tf_idf_matrix.keys())[0]])
 
     sentence_value = create_sentence_score_table(tf_idf_matrix)
-    print('Sentence Scores', sentence_value)
+    # print('Sentence Scores', sentence_value)
 
     threshold = find_average_score(sentence_value)
-    print('Threshold', threshold)
+    # print('Threshold', threshold)
 
     summary = generate_summary(sentences, sentence_value, threshold)
 
-    print('\nOriginal document\n',text,end='\n'*2)
-    print('Summary\n',summary)
+    # print('\nOriginal document\n',text,end='\n'*2)
+    print('Summary\n', summary)
+
+    print()
+    print(f'Original {len(sent_tokenize(text))} sentences, Summarized {len(sent_tokenize(summary))} sentences')
 
 
 if __name__ == '__main__':
